@@ -6,10 +6,12 @@ import (
 	"log"
 
 	//comment
+
+	"../jsonstruct"
 	_ "github.com/lib/pq"
 )
 
-var connStr = "user=postgres dbname=wn_pro_mysql sslmode=disable"
+var connStr = "user=postgres dbname=sar_tasks sslmode=disable"
 var dbConn *sql.DB
 
 //CreatePQClient : Creates PQ client
@@ -22,17 +24,24 @@ func CreatePQClient() {
 		log.Println("DB Connection is established!")
 	}
 	dbConn = db
+	//ConstructQuery()
 }
 
 //ExecuteQuery : Execute query
-func ExecuteQuery(query string) *sql.Rows {
+func ExecuteQuery(query string) (*sql.Rows, error) {
 	fmt.Print("query: ", query)
 	rows, err := dbConn.Query(query)
-	if err != nil {
-		log.Printf("error?? yes it is")
-		log.Fatal(err)
-	}
-	return rows
+	return rows, err
+}
+
+//ExecuteQueryBuilder : Executes the query builder
+func ExecuteQueryBuilder(queryOption jsonstruct.QueryOptions) (*sql.Rows, error) {
+	CreatePQClient()
+	queryBuilder := ConstructQueryBuilder(queryOption)
+	fmt.Println(queryBuilder.ToSql())
+	rows, err := queryBuilder.RunWith(dbConn).Query()
+	ClosePQClient()
+	return rows, err
 }
 
 //ClosePQClient : Close client
@@ -42,7 +51,3 @@ func ClosePQClient() {
 		log.Fatal(err)
 	}
 }
-
-// func constructQuery(queryOption json) {
-
-// }
